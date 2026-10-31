@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#102a43"><title>EV Auto Saathi</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--navy:#102a43;--blue:#1769aa;--bg:#f2f5f8;--green:#16845b;--muted:#627487}
+*{box-sizing:border-box}body{margin:0;font:15px system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:#172b3a}
+header{background:var(--navy);color:white;padding:20px 16px 24px;border-radius:0 0 22px 22px}
+header h1{margin:0;font-size:22px}header p{margin:5px 0 0;color:#d5e4ef}
+main{max-width:760px;margin:auto;padding:14px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.card{background:white;border-radius:16px;padding:15px;box-shadow:0 2px 10px #102a4310;margin-bottom:12px}
+.metric small{color:var(--muted)}.metric strong{display:block;font-size:25px;margin-top:4px}
+h2{font-size:17px;margin:0 0 12px}.muted{color:var(--muted);font-size:13px}
+label{display:block;font-size:13px;color:#42576a;margin:9px 0 4px}
+input,select{width:100%;padding:12px;border:1px solid #cbd5df;border-radius:10px;font:inherit;background:white}
+button{border:0;border-radius:10px;padding:12px 15px;background:var(--blue);color:white;font-weight:650;font:inherit;cursor:pointer}
+button.secondary{background:#e7eef5;color:var(--navy)}button.green{background:var(--green)}button.danger{background:#a83232}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{flex:1}
+.progress{height:12px;background:#e5ebf0;border-radius:20px;overflow:hidden}.bar{height:100%;background:var(--green);width:0}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid #edf1f4}
+.row:last-child{border:0}.amount{font-weight:700}.tabs{display:flex;gap:7px;overflow:auto;margin:5px 0 12px}
+.tabs button{white-space:nowrap}.tabs button.active{background:var(--navy)}
+section[hidden]{display:none!important}#qr{display:flex;justify-content:center;padding:15px;min-height:190px}
+#qr canvas,#qr img{max-width:100%;height:auto!important}
+.notice{background:#fff6df;border:1px solid #f1d58a;padding:10px;border-radius:10px;font-size:13px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:15px}
+</style>
+</head>
+<body>
+<header><h1>🚖 EV Auto Saathi</h1><p>Your daily income, payment QR, activity & reward tracker</p></header>
+<main>
+<div class="tabs">
+<button class="active" data-tab="home">Dashboard</button><button data-tab="add">Add trip</button><button data-tab="qrTab">Payment QR</button><button data-tab="history">Activity</button><button data-tab="settings">Settings</button>
+</div>
+<section id="home">
+<div class="grid">
+<div class="card metric"><small>Today's earnings</small><strong id="todayIncome">₹0</strong></div>
+<div class="card metric"><small>Today's trips</small><strong id="todayTrips">0</strong></div>
+<div class="card metric"><small>Today's expenses</small><strong id="todayExpense">₹0</strong></div>
+<div class="card metric"><small>Net today</small><strong id="todayNet">₹0</strong></div>
+</div>
+<div class="card">
+<h2>🎯 Daily goal</h2><div style="display:flex;justify-content:space-between"><span id="goalText">₹0 / ₹800</span><b id="goalPct">0%</b></div>
+<div class="progress"><div class="bar" id="goalBar"></div></div>
+<p class="muted" id="goalMessage">Add your first trip to start.</p>
+</div>
+<div class="card">
+<h2>🏆 Daily incentive</h2><strong id="reward" style="font-size:25px;color:var(--green)">₹0</strong>
+<p class="muted" id="rewardText">Reach your daily target to unlock your reward.</p>
+</div>
+<div class="card">
+<h2>Quick actions</h2><div class="actions"><button onclick="showTab('add')">＋ Add trip</button><button class="secondary" onclick="showTab('qrTab')">Show payment QR</button></div>
+</div>
+</section>
+<section id="add" hidden>
+<div class="card"><h2>Record a trip / payment</h2>
+<form id="tripForm">
+<label>Fare received (₹)</label><input id="fare" type="number" min="1" step="1" required placeholder="e.g. 50">
+<label>Payment method</label><select id="method"><option>Cash</option><option>UPI</option><option>Other</option></select>
+<label>Distance (km) — optional</label><input id="km" type="number" min="0" step="0.1" placeholder="e.g. 4.5">
+<label>Notes / pickup area — optional</label><input id="notes" maxlength="100" placeholder="e.g. Bus stand to market">
+<button class="green" style="width:100%;margin-top:14px">Save trip</button></form></div>
+<div class="card"><h2>Record an expense</h2><form id="expenseForm">
+<label>Expense amount (₹)</label><input id="expenseAmount" type="number" min="1" required placeholder="e.g. 80">
+<label>Category</label><select id="expenseCategory"><option>Maintenance</option><option>Food / water</option><option>Parking</option><option>Other</option></select>
+<button class="secondary" style="width:100%;margin-top:14px">Save expense</button></form></div>
+</section>
+<section id="qrTab" hidden>
+<div class="card"><h2>📲 Your UPI payment QR</h2><p class="muted">Set your UPI ID and name in Settings. Passenger scans this QR in any supported UPI app.</p>
+<div id="qr"><span class="muted">Enter your UPI details in Settings first.</span></div>
+<label>Payment amount (₹) — optional</label><input id="qrAmount" type="number" min="1" placeholder="Leave blank for any amount">
+<div class="actions"><button onclick="makeQR()">Generate QR</button><button class="secondary" onclick="window.print()">Print QR</button></div>
+<p class="notice">Important: A QR code only starts a payment. This app does not receive bank confirmation. Verify the payment in your UPI app/bank before marking it as paid.</p>
+</div>
+</section>
+<section id="history" hidden>
+<div class="card"><h2>Today's activity</h2><div id="activityList" class="muted">No activity yet.</div></div>
+<div class="card"><h2>All-time summary</h2><div class="row"><span>Total fares</span><b id="allIncome">₹0</b></div><div class="row"><span>Total expenses</span><b id="allExpense">₹0</b></div><div class="row"><span>Total trips</span><b id="allTrips">0</b></div>
+<button class="danger" onclick="exportCSV()">Export activity CSV</button></div>
+</section>
+<section id="settings" hidden>
+<div class="card"><h2>Driver & goal settings</h2>
+<label>Driver name</label><input id="driverName" placeholder="Auto driver">
+<label>UPI ID (VPA)</label><input id="upi" placeholder="yourname@upi">
+<label>UPI display name</label><input id="payee" placeholder="Name shown to passenger">
+<label>Daily earning goal (₹)</label><input id="goal" type="number" min="1" value="800">
+<label>Incentive when goal is reached (₹)</label><input id="incentive" type="number" min="0" value="30">
+<button class="green" style="width:100%;margin-top:14px" onclick="saveSettings()">Save settings</button>
+<p class="muted">Default goal is ₹800, based on a sample target. Change it any time.</p></div>
+<div class="card"><h2>Data & privacy</h2><p class="muted">Your records are stored on this device in this browser. They are not automatically backed up or synced to another phone.</p><button class="secondary" onclick="backupJSON()">Download data backup</button></div>
+</section>
+</main><footer>EV Auto Saathi • Personal income tracker • Not affiliated with any bank or UPI provider</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const $=id=>document.getElementById(id), money=n=>'₹'+Math.round(n||0).toLocaleString('en-IN');
+const today=()=>new Date().toLocaleDateString('en-CA');
+let data=JSON.parse(localStorage.getItem('evAutoData')||'{"trips":[],"expenses":[],"settings":{"name":"","upi":"","payee":"","goal":800,"incentive":30}}');
+function save(){localStorage.setItem('evAutoData',JSON.stringify(data));render()}
+function showTab(id){document.querySelectorAll('main section').forEach(s=>s.hidden=s.id!==id);document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));if(id==='qrTab')makeQR()}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$('tripForm').onsubmit=e=>{e.preventDefault();data.trips.push({date:today(),time:new Date().toLocaleTimeString(),fare:+$('fare').value,method:$('method').value,km:+$('km').value||0,notes:$('notes').value});e.target.reset();save();showTab('home')};
+$('expenseForm').onsubmit=e=>{e.preventDefault();data.expenses.push({date:today(),time:new Date().toLocaleTimeString(),amount:+$('expenseAmount').value,category:$('expenseCategory').value});e.target.reset();save();showTab('home')};
+function saveSettings(){data.settings={name:$('driverName').value,upi:$('upi').value.trim(),payee:$('payee').value.trim(),goal:+$('goal').value||800,incentive:+$('incentive').value||0};save();alert('Settings saved on this device.')}
+function render(){
+let t=data.trips.filter(x=>x.date===today()), ex=data.expenses.filter(x=>x.date===today()), inc=t.reduce((a,x)=>a+x.fare,0), cost=ex.reduce((a,x)=>a+x.amount,0), goal=data.settings.goal||800, pct=Math.min(100,inc/goal*100), reached=inc>=goal;
+$('todayIncome').textContent=money(inc);$('todayTrips').textContent=t.length;$('todayExpense').textContent=money(cost);$('todayNet').textContent=money(inc-cost);
+$('goalText').textContent=money(inc)+' / '+money(goal);$('goalPct').textContent=Math.floor(pct)+'%';$('goalBar').style.width=pct+'%';$('goalMessage').textContent=reached?'Goal completed! Great work.':money(goal-inc)+' more to reach today’s goal.';
+$('reward').textContent=money(reached?data.settings.incentive:0);$('rewardText').textContent=reached?'You unlocked today’s incentive. This is a tracked reward, not an automatic payout.':'Reach '+money(goal)+' in fares to unlock '+money(data.settings.incentive)+'.';
+let all=data.trips.reduce((a,x)=>a+x.fare,0), ae=data.expenses.reduce((a,x)=>a+x.amount,0);
+$('allIncome').textContent=money(all);$('allExpense').textContent=money(ae);$('allTrips').textContent=data.trips.length;
+let items=[...t.map(x=>({...x,type:'Trip',value:x.fare,detail:x.method+' • '+(x.notes||'Fare')})),...ex.map(x=>({...x,type:'Expense',value:x.amount,detail:x.category}))].sort((a,b)=>b.time.localeCompare(a.time));
+$('activityList').innerHTML=items.length?items.map(x=>`<div class="row"><div><b>${x.type}</b><div class="muted">${x.time} • ${escapeHTML(x.detail)}</div></div><span class="amount">${x.type==='Expense'?'-':''}${money(x.value)}</span></div>`).join(''):'No activity yet.';
+$('driverName').value=data.settings.name||'';$('upi').value=data.settings.upi||'';$('payee').value=data.settings.payee||'';$('goal').value=data.settings.goal||800;$('incentive').value=data.settings.incentive||30;
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function makeQR(){let el=$('qr');el.innerHTML='';let s=data.settings;if(!s.upi||!s.payee){el.textContent='Enter your UPI ID and display name in Settings first.';return}
+let amt=+$('qrAmount').value||0,uri='upi://pay?pa='+encodeURIComponent(s.upi)+'&pn='+encodeURIComponent(s.payee)+'&cu=INR'+(amt>0?'&am='+amt.toFixed(2):'');
+if(window.QRCode)new QRCode(el,{text:uri,width:210,height:210,correctLevel:QRCode.CorrectLevel.M});else el.textContent='QR library unavailable. Connect to the internet and reload.'}
+function exportCSV(){let rows=[['Type','Date','Time','Amount','Method/category','Details'],...data.trips.map(x=>['Trip',x.date,x.time,x.fare,x.method,x.notes]),...data.expenses.map(x=>['Expense',x.date,x.time,x.amount,x.category,''])];let csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n');download('ev-auto-activity.csv',csv,'text/csv')}
+function backupJSON(){download('ev-auto-backup.json',JSON.stringify(data,null,2),'application/json')}
+function download(name,content,type){let a=document.createElement('a'),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
+render();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script></body></html>

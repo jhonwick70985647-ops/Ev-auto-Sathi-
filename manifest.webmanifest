@@ -1,0 +1,9 @@
+{
+  "name": "EV Auto Saathi",
+  "short_name": "Auto Saathi",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f2f5f8",
+  "theme_color": "#102a43",
+  "description": "EV auto income, payment QR, activity and daily goal tracker"
+}
