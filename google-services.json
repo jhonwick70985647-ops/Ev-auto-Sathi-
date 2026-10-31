@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "401427363785",
+    "project_id": "evautosaathi2",
+    "storage_bucket": "evautosaathi2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:401427363785:android:074676537277f1f9c51a18",
+        "android_client_info": {
+          "package_name": "com.evautosaathi.driver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkp0uPV8BvjfV7CpBgm5DoEV6XVuzig-I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
